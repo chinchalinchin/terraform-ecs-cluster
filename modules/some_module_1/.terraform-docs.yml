@@ -1,0 +1,6 @@
+### terraform-docs config see docs for this tool here: https://github.com/terraform-docs/terraform-docs#configuration ###
+
+sections:
+  hide:
+    - providers
+    - requirements

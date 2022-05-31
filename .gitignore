@@ -1,0 +1,7 @@
+.terraform
+.terraform*
+!.terraform-docs.yml
+*.zip
+*.tfstate
+*.tfstate.backup
+planfile
