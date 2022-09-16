@@ -1,6 +1,19 @@
-### terraform-docs config see docs for this tool here: https://github.com/terraform-docs/terraform-docs#configuration ###
+formatter: "markdown table"
 
 sections:
   hide:
     - providers
-    - requirements
+    - resources
+
+output:
+  file: README.md
+  mode: inject
+
+content: |-
+  {{ .Header }}
+
+  {{ .Modules }}
+
+  {{ .Inputs }}
+
+  {{ .Outputs }}  
