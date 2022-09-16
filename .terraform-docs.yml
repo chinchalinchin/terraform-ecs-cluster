@@ -11,7 +11,7 @@ recursive:
   path: modules
 
 output:
-  file: README.md
+  file: ./docs/source/OVERVIEW.md
   mode: inject
   
 content: |-
