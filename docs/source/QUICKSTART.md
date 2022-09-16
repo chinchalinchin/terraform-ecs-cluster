@@ -1,4 +1,4 @@
-# terraform-module-template
+# Quickstart
 
 ## Continuous Integration
 

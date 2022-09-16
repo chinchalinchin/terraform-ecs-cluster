@@ -23,6 +23,4 @@ content: |-
 
   {{ .Outputs }}  
 
-  # Your Title
-
   Your custom information goes here.
