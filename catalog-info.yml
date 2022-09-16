@@ -1,0 +1,21 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: terraform-module-template
+  title: Terraform Module Template
+  description: Version control template for Terraform modules with CI files
+  ## NOTE: UNCOMMENT AND ADJUST WHEN DOCS WORKING
+  # links:
+  #   - url: TF DOC URL GOES HERE ONCE GH PAGES IS UP
+  #     title: Documentation
+  annotations:
+  ## NOTE: see above
+  #   backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: AutomationLibrary/terraform-module-template
+  tags:
+    - aws
+    - terraform
+spec:
+  type: library
+  lifecycle: production
+  owner: AutomationLibrary/BrightLabs
