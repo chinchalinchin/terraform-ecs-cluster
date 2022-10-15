@@ -4,11 +4,40 @@
 
 The _action.yml_ _.github/workflows_ directory of your repository hooks into the **AutomationLibrary**'s _Continuous Integration_ **Terraform** workflow. This file should not need altered, but there is some additional configuration detailed below that is required for these workflows to succeed.
 
+### State 
+
+By default, the  **Terraform** _provider.tf_ files from the [terraform-module-template](https://github.boozallencsn.com/AutomationLibrary/terraform-module-template) has a block for the **s3** state backend. If you want to develop locally with your own local state, you must explicitly declare this,
+
+```shell
+terraform init -backend=false
+```
+
+Alternatively, you can use the remote **s3** state backend by passing in the state key you want to us. **NOTE**: _NEVER EVER USE THE_ state/terrform.tftstate _ key, as that is where the state for the state bucket and table themselves are maintained,
+
+```shell
+terraform init -backend-config "key=dev/terraform.tfstate"
+```
+
 ### Variables
 
-If your modules contain variables without default parameters, then in order to test the release of your module in the CI pipeline, you will need to adjust the variables in _.tfvars_ to your particular project. This file is consumed in the _AutomationLibrary/.github/workflows/tf-release.yml_ during the `plan`, `apply` and `destroy` steps. See [here](https://www.terraform.io/language/values/variables#variable-definitions-tfvars-files) for more information on the configuration file. 
 
-**NOTE**: Do not include sensitive include in the _.tfvars_ file file. Instead, if you need credentials or keys in your parameters, [add a secret](https://docs.github.com/en/actions/security-guides/encrypted-secrets) to your repository and inject it into an [environment variable](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsenv).
+If your modules contain variables without default parameters, then in order to test the release of your module in the CI pipeline, you will need to copy the sample file _.sample.tfvars_ into a file named _.tfvars_ in the root of the repository and adjust the variables to your particular project. This file is consumed in the _.github/workflows/tf-release.yml_ during the `plan`, `apply` and `destroy` steps.
+
+See [TFVar Files](https://www.terraform.io/language/values/variables#variable-definitions-tfvars-files) for more info. 
+
+**NOTE**: Even if your module does _not_ have variables (unlikely, but possible), you will still need an empty _.tfvars_ file in your repository root for the `release` workflow to succeed.
+
+**NOTE**: Do not include sensitive include in the _.tfvars_ file file. Instead, if you need credentials or keys in your parameters, [add a secret](https://docs.github.com/en/actions/security-guides/encrypted-secrets) to your repository and inject it into an [environment variable](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsenv). See next section for details.
+
+### TF_ENV
+
+If you **Terraform** module contains variables with secret, sensitive information, you will need to provision a secret within your repository named **TF_ENV** that contains a JSON with key-value pairs for each secret variable,
+
+![](assets/create_secret.png)
+
+![](assets/define_secret.png)
+
+**NOTE**: It is _very important_ the variable is named **TF_ENV** and is formatted as a key-value JSON, otherwise the secret value will not be ingested into the CI/CD pipeline through Github Actions.
 
 ### Documentation
 
@@ -18,7 +47,7 @@ _.terraform-docs.yaml_ is configured to output the result of processing the **Te
 
 ### Security
 
-You will can adjust the values of the  _.terraform-security.yml_ in the root of your repository for the _Terraform Scan_ workflow for your specific project. The values in this file are used to configure `tfsec` command in the pipeline. See [here](https://aquasecurity.github.io/tfsec/v1.27.6/guides/configuration/config/) for more information on the configuration file.
+You will need a _.terraform-security.yml_ in the root of your repository for the _Terraform Scan_ workflow to succeed. You can copy the _.sample.terraform-scan.yml_ into the root of your repository and configure its values for your specific project. The values in this file are used to configure `tfsec` output in the pipeline. See [here](https://aquasecurity.github.io/tfsec/v1.27.6/guides/configuration/config/) for more information.
 
 ## GH Pages
 
@@ -39,7 +68,7 @@ Copy the contents of _docs_ in this repository into a _docs_ directory in your o
 
 ```shell
 git checkout -b gh-pages
-rm -rf **/*
+rm -rf *
 ```
 
 You will need to add a _.gitignore_ with the following patterns ignored (also included in the _.sample.terraform-gitignore_ file),
