@@ -8,4 +8,6 @@ Welcome to your-project's documentation!
    OVERVIEW
    QUICKSTART
    CONFIGURATION
+   MODULE_1
+   MODULE_2
    CONTRIBUTING
