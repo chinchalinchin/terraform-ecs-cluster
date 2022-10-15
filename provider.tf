@@ -1,12 +1,13 @@
 terraform {
   required_version = ">= 1.2.6" 
   
-#   backend "s3" {
-#     ### This configuration is only for Demo Purposes - You should use your existing TF State Management configuration ###
-#     bucket = "terraform-state-wam"
-#     key    = "demo"
-#     region = "us-east-1"
-#   }
+  backend "s3" {
+    bucket = "automation-library-terraform-state"
+    region = "us-east-1"
+    dynamodb_table = "automation-library-terraform-state-locks"
+    encrypt = "true"
+  }
+
 
   required_providers {
     aws = {
