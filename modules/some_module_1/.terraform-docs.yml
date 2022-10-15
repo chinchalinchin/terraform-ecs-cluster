@@ -6,7 +6,7 @@ sections:
     - resources
 
 output:
-  file: README.md
+  file: ../../docs/source/MODULE_1.md
   mode: inject
 
 content: |-
