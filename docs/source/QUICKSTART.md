@@ -1,37 +1,78 @@
-# Quickstart
+# Terraform Template Quickstart
 
-## Continuous Integration
+The sample action file found [here](https://github.boozallencsn.com/AutomationLibrary/actions-workflows/blob/main/.sample.action.terraform.yml) can be added to the _.github/workflows/_ subdirectory in your repository's root to hook into the [Github Action](https://docs.github.com/en/actions) CI pipeline. 
 
-The _action.yml_ _.github/workflows_ directory of your repository hooks into the **AutomationLibrary**'s _Continuous Integration_ **Terraform** workflow. This file should not need altered, but there is some additional configuration detailed below that is required for these workflows to succeed.
+**NOTE**: This workflow assumes your project is structured in a very particular way. Instead of manually adding this action file to your repository, it is recommended instead to use the template referenced in the next section as a code scaffold for developing new **Terraform** modules. This template will include all of the configuration necessary to hook into the _Automation Library_ pipeline. 
+
+### Repository Template
+
+This **Terraform** project template ([found here](https://github.boozallencsn.com/AutomationLibrary/terraform-module-template)) is pre-configured for the _AutomationLibrary_ pipeline implemented through **Github** actions. You can clone the template and then add your own project's remote,
+
+```shell
+git clone git@github.boozallencsn.com:AutomationLibrary/terraform-module-template.git <your-project-directory>
+cd <your-project-directory>
+git remote remove origin
+git remote add origin <your-project-repository-origin>
+```
+
+**TODO**: We are working on a better delivery method for the template source code, rather than manually overriding a git remote.
+
+### Github Action
+
+The _.github/workflows/.action.yml_ in the `terraform-module-template` repository provides a hook for the **AutomationLibrary**'s _Continuous Integration_ **Terraform** workflows. This [job](https://docs.github.com/en/actions/using-jobs/using-jobs-in-a-workflow) template uses several reusable workflows; For more information on the individual [Automation-Library workflows](https://docs.github.com/en/actions/using-workflows/about-workflows), see [action-workflows catalogue](https://pages.github.boozallencsn.com/AutomationLibrary/actions-workflows/CATALOGUE.html) for more information. 
+
+In most cases, the specifics of the _.action.yml_ can be ignored, as all the work has already been done; only one piece of information needs altered: You will need to update the names of the modules passed into the _Release_ reusable workflow through its `input` variable,
+
+![](./assets/module_input.png)
+
+These names _must_ match the names assigned to the modules in **Terraform**; the pipeline uses this variable to determine which modules are within a given project when it does a test deployment in its final stage.
+
+### Layout
+
+The root directory should contain a _/docs/_ directory, a _/modules/_ directory, a _README.md_, a _.tfvars_ file and a _provider.tf_ file. 
+
+The _provider.tf_ must exist because its file hash is used a key for the installation and plugin caches in the pipeline. 
+
+See [Documentation](./QUICKSTART.md) for more information on the documentation workflow and structure.
+
+Take note: Your **Terraform** repository _must_ be structured into modules. The pipeline will attempt to deploy each module separately, one at a time. If the project is not structured as modules, then the pipeline deployment will most likely fail.
+
 
 ### State 
 
-By default, the  **Terraform** _provider.tf_ files from the [terraform-module-template](https://github.boozallencsn.com/AutomationLibrary/terraform-module-template) has a block for the **s3** state backend. If you want to develop locally with your own local state, you must explicitly declare this,
+By default, the  **Terraform** _provider.tf_ file from the [terraform-module-template](https://github.boozallencsn.com/AutomationLibrary/terraform-module-template) has a block for an **s3** state backend. If you want to develop locally with your own local state, you must explicitly declare this,
 
 ```shell
 terraform init -backend=false
 ```
 
-Alternatively, you can use the remote **s3** state backend by passing in the state key you want to us. **NOTE**: _NEVER EVER USE THE_ state/terrform.tftstate _ key, as that is where the state for the state bucket and table themselves are maintained,
+Alternatively, you can use the remote **s3** state backend by passing in the state key you want to us. **NOTE**: _NEVER EVER USE THE_ state/terrform.tftstate _ key, as that is where the state for the state bucket and lock table themselves are maintained,
 
 ```shell
 terraform init -backend-config "key=dev/terraform.tfstate"
 ```
 
+It is recommended you create a new workspace for a given project and isolate all the project resources within in that workspace,
+
+```shell
+terraform workspace new my-project
+```
+
+Otherwise, as you add more projects to the `default` workspace, your **Terraform** state will become harder to manage.
+
 ### Variables
 
+If your modules contain variables without default parameters, then in order to test the release of your module in the pipeline, you will need to set the variable values _.tfvars_ in the root of the repository. This file is consumed in the _Release_ job during the `plan`, `apply` and `destroy` steps.
 
-If your modules contain variables without default parameters, then in order to test the release of your module in the CI pipeline, you will need to copy the sample file _.sample.tfvars_ into a file named _.tfvars_ in the root of the repository and adjust the variables to your particular project. This file is consumed in the _.github/workflows/tf-release.yml_ during the `plan`, `apply` and `destroy` steps.
+See [Terraform tfvars Files](https://www.terraform.io/language/values/variables#variable-definitions-tfvars-files) for more info. 
 
-See [TFVar Files](https://www.terraform.io/language/values/variables#variable-definitions-tfvars-files) for more info. 
-
-**NOTE**: Even if your module does _not_ have variables (unlikely, but possible), you will still need an empty _.tfvars_ file in your repository root for the `release` workflow to succeed.
+**NOTE**: Even if your module does _not_ have variables (unlikely, but possible), you will still need an empty _.tfvars_ file in your repository root for the _Release_ job to succeed.
 
 **NOTE**: Do not include sensitive include in the _.tfvars_ file file. Instead, if you need credentials or keys in your parameters, [add a secret](https://docs.github.com/en/actions/security-guides/encrypted-secrets) to your repository and inject it into an [environment variable](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsenv). See next section for details.
 
 ### TF_ENV
 
-If you **Terraform** module contains variables with secret, sensitive information, you will need to provision a secret within your repository named **TF_ENV** that contains a JSON with key-value pairs for each secret variable,
+If your **Terraform** module contains variables with secret, sensitive information, you will need to provision a secret within your repository named **TF_ENV** that contains a JSON with key-value pairs for each secret variable,
 
 ![](assets/create_secret.png)
 
@@ -39,19 +80,21 @@ If you **Terraform** module contains variables with secret, sensitive informatio
 
 **NOTE**: It is _very important_ the variable is named **TF_ENV** and is formatted as a key-value JSON, otherwise the secret value will not be ingested into the CI/CD pipeline through Github Actions.
 
+This JSON is parsed in the _Release_ job and the values are injected into the execution environment under the key for that value. See [TF_VAR_ syntax documentation](https://developer.hashicorp.com/terraform/cli/config/environment-variables) for more inforrmation.
+
 ### Documentation
 
-You may configure the values of _.terraform-docs.yml_ to modify documentation output for your specific project. The values in this file are used to configure `tfdocs` command in the pipeline. See [here](https://terraform-docs.io/user-guide/configuration/) for more information on the configuration file.
+You will need a _.terraform-docs.yaml_ in the root of your repository for the _Terraform Docs_ workflow to succeed. The values in this file are used to configure `tfdocs` output in the pipeline. See [here](https://terraform-docs.io/user-guide/configuration/) for more information.
 
-_.terraform-docs.yaml_ is configured to output the result of processing the **Terraform** modules' _READMEs_ into _docs/source/OVERVIEW.md_. This is so the outputted markdown files can be hooked into the **Sphinx** markdown-to-html processing. See [GH Pages](#gh-pages) below for more information.
+_.terraform-docs.yaml_ is configured to output the result of processing the **Terraform** modules' _READMEs_ into _docs/source/OVERVIEW.md_. This is so the outputted markdown files can be inputted into the **Sphinx** markdown-to-html processing. See [GH Pages](./QUICKSTART.md#gh-pages) below for more information.
 
 ### Security
 
-You will need a _.terraform-security.yml_ in the root of your repository for the _Terraform Scan_ workflow to succeed. You can copy the _.sample.terraform-scan.yml_ into the root of your repository and configure its values for your specific project. The values in this file are used to configure `tfsec` output in the pipeline. See [here](https://aquasecurity.github.io/tfsec/v1.27.6/guides/configuration/config/) for more information.
+You will need a _.terraform-security.yml_ in the root of your repository for the _Terraform Scan_ workflow to succeed. The values in this file are used to configure `tfsec` output in the pipeline. See [here](https://aquasecurity.github.io/tfsec/v1.27.6/guides/configuration/config/) for more information.
 
 ## GH Pages
 
-Documentation is published to the _gh-pages_ branch of each repository. The _docs_ directory in this master repository has a preconfigured **Sphinx** project that demonstrates how the pipleine process _md_ Markdown files into _html_ webpage documents. Change directory into _docs_ and build the _html_ files,
+Documentation is published to the _gh-pages_ branch of each repository. The _docs_ directory in the template repository has a preconfigured **Sphinx** project that demonstrates how the pipleine process _md_ Markdown files into _html_ webpage documents. Change directory into _docs_ and build the _html_ files,
 
 ```shell
 cd docs
@@ -74,7 +117,10 @@ rm -rf *
 You will need to add a _.gitignore_ with the following patterns ignored (also included in the _.sample.terraform-gitignore_ file),
 
 ```
+**/.DS_Store
 /docs/build/*
+**/*.env
+!**/*.sample.env
 **/.venv
 **/.terraform
 **/*.tfstate
@@ -86,9 +132,19 @@ You will need to add a _.gitignore_ with the following patterns ignored (also in
 **/*.zip
 **/*.tar
 **/*.gz
+**/*.lock.info
+**/objects.inv
 ```
 
-And then commit it and push it up to the remote,
+And a _.gitattributes_ with the following content,
+
+```
+* text=auto eol=lf
+*.{cmd,[cC][mM][dD]} text eol=crlf
+*.{bat,[bB][aA][tT]} text eol=crlf
+```
+
+Commit these two files to the `gh-pages` branch and push them up to the remote,
 
 ```shell
 git add . 
@@ -96,17 +152,26 @@ git commit -m 'initiailize gh-pages branch'
 git push --set-upstream origin gh-pages
 ```
 
+## DevPortal Integration
 
-## Docs
-### Github Actions
-- [Reusable Workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows#using-inputs-and-secrets-in-a-reusable-workflow)
-- [Managing Actions on Github Enterprise Servr (GHES)](https://docs.github.com/en/enterprise-server@3.5/admin/github-actions/managing-access-to-actions-from-githubcom/about-using-actions-in-your-enterprise)
-- [Enable Debug Logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging)
-- [Booz Allen CSN Github Actions](https://github.boozallencsn.com/actions)
-### Terraform Docs
-- [Configuration File](https://terraform-docs.io/user-guide/configuration/)
-### Terraform Security
-- [Configuration File](https://aquasecurity.github.io/tfsec/v1.27.6/guides/configuration/config/)
-### Sphinx
-- [Sphinx Getting Started](https://www.sphinx-doc.org/en/master/usage/quickstart.html)
-- [Material for Sphinx](https://bashtage.github.io/sphinx-material/)
+The [Developer Portal](https://developerportal.bah.com) is a company wide registry for reusable projects and code scaffolding/templates. After your project has passed the _AutomationLibrary_ continuous integration pipeline, your repository is eligible for promotion into the portal. To add your repository to the developer portal, you must do three things:
+
+1. Add a _catalog-info.yml_ to the root of your repository.
+2. Add your repository to the _AutomationLibrary's_ fork of the DeveloperPortal helm chart.
+3. Create a pull request from the _AutomationLibrary_ fork into the `develop` branch of the upstream DeveloperPortal repository.
+
+### catalog-info
+
+This file contains metadata about your repository that is ingested into the developer portal to populate the web UI. 
+
+[A sample file for the aws-synthetics-heartbeat-canary repo can be found here](https://github.boozallencsn.com/AutomationLibrary/aws-synthetics-heartbeat-canary/blob/master/catalog-info.yml).
+
+See [developer portal documentation](https://github.boozallencsn.com/solutionscenter-sandbox/developer-portal-user-guide/blob/develop/docs/how-to/solution-intake/defining-entity.md) for more information on configuring the _catalog-info.yml_.
+
+### Helm Chart
+
+Clone the [AutomationLibrary/charts](https://github.boozallencsn.com/AutomationLibrary/charts) repository. Add links to your repository in the [/charts/backstage/config/envs/dev/app-config.yml](https://github.boozallencsn.com/AutomationLibrary/charts/blob/develop/charts/backstage/config/envs/dev/app-config.yaml#L242) and [/charts/backstage/config/envs/prod/app-config.yml](https://github.boozallencsn.com/AutomationLibrary/charts/blob/develop/charts/backstage/config/envs/prod/app-config.yaml#L242), underneath `catalogue.locations`.
+
+### Pull Request
+
+Create a pull request into the upstream `develop` branch of [solutionscenter-sandbox/charts](https://github.boozallencsn.com/solutionscenter-sandbox/charts) repository. Inform someone on the team that a pull request has been submitted; the best way to do this is to post a message in the _software-studio_ **Slack** channel.

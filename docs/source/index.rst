@@ -1,5 +1,5 @@
-Welcome to your-project's documentation!
-========================================
+Welcome to terraform-module-template's documentation!
+=====================================================
 
 .. toctree::
    :maxdepth: 2
@@ -7,7 +7,8 @@ Welcome to your-project's documentation!
 
    OVERVIEW
    QUICKSTART
-   CONFIGURATION
+   CONTINUOUS_INTEGRATION
    MODULE_1
    MODULE_2
    CONTRIBUTING
+   APPENDIX.md
