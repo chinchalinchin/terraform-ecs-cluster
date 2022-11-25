@@ -5,7 +5,10 @@ on:
     branches:
       - feature/**
       - hotfix/**
+      # these two branches are included in the template repo to force docs to build on master pushes...
+      # they should be removed for projects...
       - master
+      - main
 
   # see: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request
   pull_request:
