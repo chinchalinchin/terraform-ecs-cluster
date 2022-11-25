@@ -46,7 +46,7 @@ jobs:
     uses: AutomationLibrary/actions-workflows/.github/workflows/tf-lint.yml@main
 
   Docs:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'push' }}
     uses: AutomationLibrary/actions-workflows/.github/workflows/gh-pages.yml@main
     secrets:
       ACTIONS_BOT_USERNAME: ${{ secrets.ACTIONS_BOT_USERNAME }}
