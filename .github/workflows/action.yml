@@ -1,5 +1,7 @@
 name: terraform workflows
 
+permissions: read-all
+
 on:
   push:
     branches:
