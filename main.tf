@@ -5,13 +5,8 @@
  * One or two sentences about what this modules does.
  */
 
-module "module_name_1" {
-  source      = "./modules/some_module_1"
-  some_var = ""
-}
-
-module "module_name_2" {
-  source      = "./modules/some_module_2"
-  some_var = ""
+module "fargate" {
+  source            = "./modules/fargate"
+  some_var          = ""
 }
 

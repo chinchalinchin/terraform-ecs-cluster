@@ -1,8 +1,8 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: terraform-module-template
-  title: Terraform Module Template
+  name: aws-ecs-fargate-cluster
+  title: AWS ECS Fargate Cluster
   description: Version control template for Terraform modules with CI files
   ## NOTE: UNCOMMENT AND ADJUST WHEN DOCS WORKING
   # links:
@@ -11,10 +11,12 @@ metadata:
   annotations:
   ## NOTE: see above
   #   backstage.io/techdocs-ref: dir:.
-    github.com/project-slug: AutomationLibrary/terraform-module-template
+    github.com/project-slug: AutomationLibrary/aws-ecs-fargate-cluster
   tags:
     - aws
     - terraform
+    - ecs
+    - fargate
 spec:
   type: library
   lifecycle: production
