@@ -1,6 +1,4 @@
-# terraform-module-template
-
-A project template for **terraform** modules. This repository includes all the necessary _continuous integration_ configuration files for `tf-lint`, `tf-sec`, `checkov`, `tf-docs` and `sphinx`
+# aws-ecs-fargate-cluster
 
 <!-- BEGIN_TF_DOCS -->
   Placeholder for Terraform Docs
