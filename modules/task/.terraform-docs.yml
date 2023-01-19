@@ -6,7 +6,7 @@ sections:
     - resources
 
 output:
-  file: ../../docs/source/MODULE_FARGATE.md
+  file: ../../docs/source/MODULE_TASK.md
   mode: inject
 
 content: |-

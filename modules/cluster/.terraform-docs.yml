@@ -1,0 +1,19 @@
+formatter: "markdown table"
+
+sections:
+  hide:
+    - providers
+    - resources
+
+output:
+  file: ../../docs/source/MODULE_CLUSTER.md
+  mode: inject
+
+content: |-
+  {{ .Header }}
+
+  {{ .Modules }}
+
+  {{ .Inputs }}
+
+  {{ .Outputs }}  
