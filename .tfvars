@@ -1,5 +1,5 @@
 cluster_config = {
-    name                    = "autolib-fargate-cluster"
+    name                    = "autolib-cluster"
     namespace               = "autolib.net"
 }
 

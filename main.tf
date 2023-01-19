@@ -1,7 +1,8 @@
 module "cluster" {
   source                                  = "./modules/cluster"
   cluster_config                          = var.cluster_config
-  vpc_config                              = var.vpc_config        
+  vpc_config                              = var.vpc_config   
+  tenant                                  = var.tenant     
 }
 
 
@@ -16,5 +17,6 @@ module "task" {
   service_config                          = var.service_config
   task_definition                         = var.task_definition
   task_execution_role_arn                 = var.task_execution_role_arn
+  tenant                                  = var.tenant
 }
 

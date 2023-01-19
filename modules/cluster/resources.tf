@@ -132,7 +132,7 @@ resource "aws_security_group_rule" "public_lb_web_ingress" {
 
 
 resource "aws_lb" "cluster_public_lb" {
-    name                                                = "${var.cluster_config.name}-cluster-public-lb"
+    name                                                = "${var.cluster_config.name}-public-lb"
     internal                                            = false
     load_balancer_type                                  = "application"
     security_groups                                     = [
@@ -152,7 +152,7 @@ resource "aws_lb" "cluster_public_lb" {
 
 
 resource "aws_lb" "cluster_private_lb" {
-    name                                                = "${var.cluster_config.name}-cluster-private-lb"
+    name                                                = "${var.cluster_config.name}-private-lb"
     internal                                            = false
     load_balancer_type                                  = "application"
     security_groups                                     = [

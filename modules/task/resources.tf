@@ -52,11 +52,8 @@ resource "aws_ecs_task_definition" "task_definition" {
     execution_role_arn                              = var.task_execution_role_arn
     cpu                                             = local.task_cpu
     memory                                          = local.task_memory
-    container_definitions                           = jsonencode(
-                                                        jsondecode(
-                                                            file("${path.module}/../${var.task_definition}")
-                                                        )
-                                                    )
+    container_definitions                           = "${file("${path.module}/../../${var.task_definition}")}"
+
 
     volume {
         name                                            = "${var.service_config.name}"
@@ -76,7 +73,7 @@ resource "aws_ecs_service" "service" {
     launch_type                                         = "FARGATE"
 
     network_configuration {
-        subnets                                         = var.service_config.public ? var.vpc_config.public_subnets : var.vpc_config.private_subnets
+        subnets                                         = var.service_config.public ? var.vpc_config.public_subnet_ids : var.vpc_config.private_subnet_ids
         security_groups                                 = var.service_config.security_group_ids
         assign_public_ip                                = var.service_config.public
     }

@@ -1,3 +1,9 @@
+variable "tenant" {
+    description                         = "Name of tenant"
+    type                                = string
+}
+
+
 variable "cluster_config" {
     description                         = "Cluster configuration for deployment"
     type = object({
@@ -5,7 +11,7 @@ variable "cluster_config" {
         namespace                       = string
     })       
     default = {
-        name                            = "automation-library-cluster"
+        name                            = "autolib-cluster"
         namespace                       = "autolib.net"
     }
 }
