@@ -11,7 +11,7 @@ module "task" {
                                           ]
   source                                  = "./modules/task"
   cluster_id                              = module.cluster.cluster_id
-  namespace_id                            = module.cluster.cluster_namespace_id
+  cluster_namespace_id                    = module.cluster.cluster_namespace_id
   vpc_config                              = var.vpc_config  
   service_config                          = var.service_config
   task_definition                         = var.task_definition

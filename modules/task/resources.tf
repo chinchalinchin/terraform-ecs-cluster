@@ -1,7 +1,7 @@
 resource "aws_appautoscaling_target" "task_replica_targets" {
   service_namespace                                 = "ecs"
   scalable_dimension                                = "ecs:service:DesiredCount"
-  resource_id                                       = "service/${var.cluster_name}/${var.service_config.name}"
+  resource_id                                       = "service/${var.cluster_id}/${var.service_config.name}"
   min_capacity                                      = local.autoscale_min
   max_capacity                                      = local.autoscale_max
 }
@@ -26,7 +26,7 @@ resource "aws_appautoscaling_policy" "task_policy" {
 
 
 resource "aws_lb_target_group" "service_target_group" {
-    name                                            = "${var.cluster_name}-${var.service_config.name}"
+    name                                            = "${var.cluster_id}-${var.service_config.name}"
     port                                            = var.service_config.port
     protocol                                        = "HTTP"
     vpc_id                                          = var.vpc_config.id
