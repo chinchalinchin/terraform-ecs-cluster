@@ -56,6 +56,14 @@ resource "aws_security_group" "private_lb_sg" {
 }
 
 
+resource "aws_security_group" "public_lb_sg" {
+    name                                                = "${var.cluster_name}-public-lb-sg"
+    description                                         = "${var.cluster_name} public load balancer security group"
+    vpc_id                                              = var.vpc_config.vpc_id
+    tags                                                = local.ecs_tags
+}
+
+
 resource "aws_security_group_rule" "cluster_self_ingress" {
     description                                         = "Restrict ${var.cluster_name} cluster access to cluster security group"
     type                                                = "ingress"
@@ -67,12 +75,33 @@ resource "aws_security_group_rule" "cluster_self_ingress" {
 } 
 
 
-resource "aws_security_group_rule" "private_lb_ingress" {
-    description                                         = "Allow ${var.cluster_name} cluster access to private load balancer security group"
+resource "aws_security_group_rule" "cluster_private_lb_ingress" {
+    description                                         = "Allow ${var.cluster_name} cluster access from private load balancer security group"
     type                                                = "ingress"
     from_port                                           = 0
     to_port                                             = 0
     protocol                                            = "-1"
     security_group_id                                   = aws_security_group.cluster_sg.id
     source_security_group_id                            = aws_security_group.private_lb_sg.id
+} 
+
+
+resource "aws_security_group_rule" "cluster_public_lb_ingress" {
+    description                                         = "Allow ${var.cluster_name} cluster access from public load balancer security group"
+    type                                                = "ingress"
+    from_port                                           = 0
+    to_port                                             = 0
+    protocol                                            = "-1"
+    security_group_id                                   = aws_security_group.cluster_sg.id
+    source_security_group_id                            = aws_security_group.public_lb_sg.id
+} 
+
+
+resource "aws_security_group_rule" "public_lb_web_ingress" {
+    description                                         = "Restrict ${var.cluster_name} public load balancer to HTTPS traffic"
+    type                                                = "ingress"
+    from_port                                           = 443
+    to_port                                             = 443
+    protocol                                            = "TCP"
+    security_group_id                                   = aws_security_group.public_lb_sg.id
 } 
