@@ -1,7 +1,7 @@
 resource "aws_appautoscaling_target" "task_replica_targets" {
   service_namespace                                 = "ecs"
   scalable_dimension                                = "ecs:service:DesiredCount"
-  resource_id                                       = "service/${var.cluster_config.name}/${var.service_config.name}"
+  resource_id                                       = "service/${var.cluster_name}/${var.service_config.name}"
   min_capacity                                      = local.autoscale_min
   max_capacity                                      = local.autoscale_max
 }
@@ -26,7 +26,7 @@ resource "aws_appautoscaling_policy" "task_policy" {
 
 
 resource "aws_lb_target_group" "service_target_group" {
-    name                                            = "${var.cluster_config.name}-${var.service_config.name}"
+    name                                            = "${var.cluster_name}-${var.service_config.name}"
     port                                            = var.service_config.port
     protocol                                        = "HTTP"
     vpc_id                                          = var.vpc_config.id
@@ -67,7 +67,7 @@ resource "aws_ecs_task_definition" "task_definition" {
 
 resource "aws_ecs_service" "service" {
     name                                                = var.service_config.name
-    cluster                                             = module.cluster.cluster.id
+    cluster                                             = var.cluster_id
     task_definition                                     = aws_ecs_task_definition.task_definition.arn
     desired_count                                       = var.service_config.desired_count
     deployment_maximum_percent                          = local.service_max_percent
@@ -96,7 +96,7 @@ resource "aws_service_discovery_service" "discovery_serice" {
     name = "${var.service_config.name}-discovery-serrvice"
 
     dns_config {
-        namespace_id = module.cluster.cluster_namespace.id
+        namespace_id                                    = var.cluster_namespace_id
 
         dns_records {
             ttl                                         = 10

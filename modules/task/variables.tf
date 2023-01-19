@@ -1,13 +1,25 @@
-variable "cluster_config" {
-    description                         = "Cluster configuration for deployment"
-    type = object({
-        name                            = string
-        namespace                       = string
-    })       
-    default = {
-        name                            = "automation-library-cluster"
-        namespace                       = "autolib.net"
-    }
+variable "cluster_id" {
+    description                         = "ID of the cluster"
+    type                                = string
+}
+
+
+variable "cluster_namespace_id" {
+    description                         = "ID of the cluster DNS namespace"
+    type                                = string
+}
+
+
+variable "task_definition" {
+    description                         = "File path to Task Definition JSON"
+    type                                = string
+    default                             = "task_definition.json"           
+}
+
+
+variable "task_execution_role_arn" {
+    description                         = "Role ARN for the ECS task to assume"
+    type                                = string
 }
 
 
@@ -42,17 +54,4 @@ variable "vpc_config" {
         cidr_block                      = string
     })
     default                             = null
-}
-
-
-variable "task_definition" {
-    description                         = "File path to Task Definition JSON"
-    type                                = string
-    default                             = "task_definition.json"           
-}
-
-
-variable "task_execution_role_arn" {
-    description                         = "Role ARN for the ECS task to assume"
-    type                                = string
 }
