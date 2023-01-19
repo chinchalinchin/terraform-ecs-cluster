@@ -1,5 +1,5 @@
 resource "aws_kms_key" "cluster_key" {
-    description                                         = "KMS key for encrypting ${var.cluster_config.cluster_name} secrets"
+    description                                         = "KMS key for encrypting ${var.cluster_config.name} secrets"
     deletion_window_in_days                             = 10
     enable_key_rotation                                 = true
     customer_master_key_spec                            = "SYMMETRIC_DEFAULT"
@@ -10,7 +10,7 @@ resource "aws_kms_key" "cluster_key" {
 
 
 resource "aws_cloudwatch_log_group" "cluster_log_group" {
-    name                                                = "${var.cluster_config.cluster_name}-log-group"
+    name                                                = "${var.cluster_config.name}-log-group"
     kms_key_id                                          = aws_kms_key.cluster_key.arn
     retention_in_days                                   = local.cw_log_retention
 }
@@ -19,7 +19,7 @@ resource "aws_s3_bucket" "lb_access_log_bucket" {
     #checkov:skip=CKV_AWS_144: "Ensure that S3 bucket has cross-region replication enabled"
     #checkov:skip=CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
 
-    bucket                                              = "${var.cluster_config.cluster_name}-lb-access-logs"
+    bucket                                              = "${var.cluster_config.name}-lb-access-logs"
     tags                                                = local.s3_tags
 
     server_side_encryption_configuration {
@@ -38,7 +38,7 @@ resource "aws_s3_bucket" "lb_access_log_bucket" {
 
 
 resource "aws_ecs_cluster" "cluster" {
-  name                                                  = var.cluster_config.cluster_name
+  name                                                  = var.cluster_config.name
 
   configuration {
     execute_command_configuration {
@@ -56,23 +56,23 @@ resource "aws_ecs_cluster" "cluster" {
 
 resource "aws_service_discovery_private_dns_namespace" "cluster_namespace" {
   name                                                  = var.cluster_config.namespace
-  description                                           = "Private DNS namespace for ${var.cluster_config.cluster_name} services"
+  description                                           = "Private DNS namespace for ${var.cluster_config.name} services"
   vpc                                                   = var.vpc_config.vpc_id
 }
 
 
 resource "aws_security_group" "cluster_sg" {
-    name                                                = "${var.cluster_name}-cluster-sg"
-    description                                         = "${var.cluster_name} security group"
+    name                                                = "${var.cluster_config.name}-cluster-sg"
+    description                                         = "${var.cluster_config.name} security group"
     vpc_id                                              = var.vpc_config.vpc_id
     tags                                                = local.ecs_tags
 }
 
 
 resource "aws_security_group" "private_lb_sg" {
-    name                                                = "${var.cluster_name}-private-lb-sg"
-    description                                         = "${var.cluster_name} private load balancer security group"
-    vpc_id                                              = var.vpc_config.vpc_id
+    name                                                = "${var.cluster_config.name}-private-lb-sg"
+    description                                         = "${var.cluster_config.name} private load balancer security group"
+    vpc_id                                              = var.vpc_config.id
     tags                                                = local.ecs_tags
 }
 
@@ -80,7 +80,7 @@ resource "aws_security_group" "private_lb_sg" {
 resource "aws_security_group" "public_lb_sg" {
     name                                                = "${var.cluster_name}-public-lb-sg"
     description                                         = "${var.cluster_name} public load balancer security group"
-    vpc_id                                              = var.vpc_config.vpc_id
+    vpc_id                                              = var.vpc_config.id
     tags                                                = local.ecs_tags
 }
 

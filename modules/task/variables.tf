@@ -20,7 +20,6 @@ variable "service_config" {
         public                          = bool
         security_group_ids              = list(string)
         healthcheck_endpoint            = string
-        
     })
     default = {
         name                            = "autolib-service"
@@ -29,7 +28,6 @@ variable "service_config" {
         public                          = true
         security_group_ids              = []
         healthcheck_endpoint            = "/"
-
     }
 }
 
@@ -45,6 +43,7 @@ variable "vpc_config" {
     })
     default                             = null
 }
+
 
 variable "task_definition" {
     description                         = "File path to Task Definition JSON"
