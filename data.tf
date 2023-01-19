@@ -1,4 +1,7 @@
-# DO NOT COMMIT YOUR AWS ACCOUNT ID! IT SHOULD BE TREATED AS SECRET!
+data "aws_caller_identity" "current" {}
 
-# Uncomment if you need to use the account ID in the module.
-# data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
+data "aws_vpc" "cluster_vpc" {
+    id                                                  = var.vpc_config.vpc_id
+}

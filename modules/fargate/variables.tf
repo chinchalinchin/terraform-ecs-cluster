@@ -1,4 +1,23 @@
-# variable "bucket_name" {
-#   description = "Name of the S3 bucket to be created"
-#   type        = string
-# }
+variable cluster_config {
+    description                         = "Cluster configuration for deployment"
+    type = object({
+        name                            = string
+    })       
+    default = {
+        name                            = "automation-library-cluster"
+        namespace                       = "autolib.net"
+    }
+}
+
+
+variable "vpc_config" {
+    description                         = "VPC configuration for deployment"
+    type = object({
+        vpc_id                          = string
+        security_group_ids              = list(string)
+        public_subnet_ids               = list(string)
+        private_subnet_ids              = list(string)
+        cidr_block                      = string
+    })
+    default                             = null
+}
