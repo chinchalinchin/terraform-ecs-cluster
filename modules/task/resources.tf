@@ -8,20 +8,20 @@ resource "aws_appautoscaling_target" "task_replica_targets" {
 
 
 resource "aws_appautoscaling_policy" "task_policy" {
-  name                                              = "scale-down"
-  policy_type                                       = "TargetTrackingScaling"
-  resource_id                                       = aws_appautoscaling_target.task_replica_targets.resource_id
-  scalable_dimension                                = aws_appautoscaling_target.task_replica_targets.scalable_dimension
-  service_namespace                                 = aws_appautoscaling_target.task_replica_targets.service_namespace
+    name                                              = "scale-down"
+    policy_type                                       = "TargetTrackingScaling"
+    resource_id                                       = aws_appautoscaling_target.task_replica_targets.resource_id
+    scalable_dimension                                = aws_appautoscaling_target.task_replica_targets.scalable_dimension
+    service_namespace                                 = aws_appautoscaling_target.task_replica_targets.service_namespace
 
-  target_tracking_scaling_policy_configuration {
-    predefined_metric_specification {
-      predefined_metric_type                        = "ECSServiceAverageCPUUtilization"
+    target_tracking_scaling_policy_configuration {
+        predefined_metric_specification {
+            predefined_metric_type                        = "ECSServiceAverageCPUUtilization"
+        }
+        scale_in_cooldown                             = local.scale_in_cooldown
+        scale_out_cooldown                            = local.scale_out_cooldown
+        target_value                                  = local.scale_target
     }
-    scale_in_cooldown                               = local.scale_in_cooldown
-    scale_out_cooldown                              = local.scale_out_cooldown
-    target_value = 70
-  }
 }
 
 
@@ -76,9 +76,7 @@ resource "aws_ecs_service" "service" {
     launch_type                                         = "FARGATE"
 
     network_configuration {
-        subnets                                         = var.service_config.public 
-                                                            ? var.vpc_config.public_subnets
-                                                            : var.vpc_config.private_subnets
+        subnets                                         = var.service_config.public ? var.vpc_config.public_subnets : var.vpc_config.private_subnets
         security_groups                                 = var.service_config.security_group_ids
         assign_public_ip                                = var.service_config.public
     }
@@ -87,5 +85,32 @@ resource "aws_ecs_service" "service" {
         container_name                                  = var.service_config.name
         container_port                                  = var.service_config.port
     }
+    service_registries {
+        registry_arn                                    = aws_service_discovery_service.discovery_serice.arn
+        port                                            = var.service_config.port
+    }
 
+}
+
+resource "aws_service_discovery_service" "discovery_serice" {
+    name = "${var.service_config.name}-discovery-serrvice"
+
+    dns_config {
+        namespace_id = module.cluster.cluster_namespace.id
+
+        dns_records {
+            ttl                                         = 10
+            type                                        = "A"
+        }
+        dns_records {
+            ttl                                         = 10
+            type                                        = "SRV"
+        }
+
+        routing_policy                                  = "MULTIVALUE"
+    }
+
+    health_check_custom_config {
+        failure_threshold                               = 1
+    }
 }

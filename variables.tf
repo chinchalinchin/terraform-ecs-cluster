@@ -44,6 +44,7 @@ variable "vpc_config" {
         cidr_block                      = string
     })
     default                             = null
+    sensitive                           = true
 }
 
 variable "task_definition" {
@@ -56,4 +57,12 @@ variable "task_definition" {
 variable "task_execution_role_arn" {
     description                         = "Role ARN for the ECS task to assume"
     type                                = string
+    sensitive                           = true
+}
+
+
+variable "region" {
+    description                         = "Region where resources will be deployed"
+    type                                = string
+    default                             = "us-east-1"
 }

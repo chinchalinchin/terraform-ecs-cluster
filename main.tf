@@ -1,12 +1,13 @@
-/**
- * Reuseable X-Project module written in terraform.
- *
- * One or two sentences about what this modules does.
- * One or two sentences about what this modules does.
- */
+module "cluster" {
+  source                                  = "./modules/cluster"
+  some_var                                = ""
+}
 
-module "fargate" {
-  source            = "./modules/fargate"
-  some_var          = ""
+
+module "task" {
+  depends_on                              = [
+                                            module.cluster
+                                          ]
+  source                                  = "./modules/task"
 }
 
