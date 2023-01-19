@@ -29,9 +29,9 @@ resource "aws_lb_target_group" "service_target_group" {
     name                                            = "${var.cluster_config.name}-${var.service_config.name}"
     port                                            = var.service_config.port
     protocol                                        = "HTTP"
-    vpc_id                                          = var.vpc_config.vpc_id
+    vpc_id                                          = var.vpc_config.id
 
-    healthcheck {
+    health_check {
         enabled                                     = true
         path                                        = var.service_config.healthcheck_endpoint
         port                                        = var.service_config.port
@@ -54,7 +54,7 @@ resource "aws_ecs_task_definition" "task_definition" {
     memory                                          = local.task_memory
     container_definitions                           = jsonencode(
                                                         jsondecode(
-                                                            file("${path.module}/../${task_definition}")
+                                                            file("${path.module}/../${var.task_definition}")
                                                         )
                                                     )
 

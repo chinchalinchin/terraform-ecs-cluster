@@ -57,14 +57,14 @@ resource "aws_ecs_cluster" "cluster" {
 resource "aws_service_discovery_private_dns_namespace" "cluster_namespace" {
   name                                                  = var.cluster_config.namespace
   description                                           = "Private DNS namespace for ${var.cluster_config.name} services"
-  vpc                                                   = var.vpc_config.vpc_id
+  vpc                                                   = var.vpc_config.id
 }
 
 
 resource "aws_security_group" "cluster_sg" {
     name                                                = "${var.cluster_config.name}-cluster-sg"
     description                                         = "${var.cluster_config.name} security group"
-    vpc_id                                              = var.vpc_config.vpc_id
+    vpc_id                                              = var.vpc_config.id
     tags                                                = local.ecs_tags
 }
 
@@ -78,15 +78,15 @@ resource "aws_security_group" "private_lb_sg" {
 
 
 resource "aws_security_group" "public_lb_sg" {
-    name                                                = "${var.cluster_name}-public-lb-sg"
-    description                                         = "${var.cluster_name} public load balancer security group"
+    name                                                = "${var.cluster_config.name}-public-lb-sg"
+    description                                         = "${var.cluster_config.name} public load balancer security group"
     vpc_id                                              = var.vpc_config.id
     tags                                                = local.ecs_tags
 }
 
 
 resource "aws_security_group_rule" "cluster_self_ingress" {
-    description                                         = "Restrict ${var.cluster_name} cluster access to cluster security group"
+    description                                         = "Restrict ${var.cluster_config.name} cluster access to cluster security group"
     type                                                = "ingress"
     from_port                                           = 0
     to_port                                             = 0
@@ -97,7 +97,7 @@ resource "aws_security_group_rule" "cluster_self_ingress" {
 
 
 resource "aws_security_group_rule" "cluster_private_lb_ingress" {
-    description                                         = "Allow ${var.cluster_name} cluster access from private load balancer security group"
+    description                                         = "Allow ${var.cluster_config.name} cluster access from private load balancer security group"
     type                                                = "ingress"
     from_port                                           = 0
     to_port                                             = 0
@@ -108,7 +108,7 @@ resource "aws_security_group_rule" "cluster_private_lb_ingress" {
 
 
 resource "aws_security_group_rule" "cluster_public_lb_ingress" {
-    description                                         = "Allow ${var.cluster_name} cluster access from public load balancer security group"
+    description                                         = "Allow ${var.cluster_config.name} cluster access from public load balancer security group"
     type                                                = "ingress"
     from_port                                           = 0
     to_port                                             = 0
@@ -119,54 +119,53 @@ resource "aws_security_group_rule" "cluster_public_lb_ingress" {
 
 
 resource "aws_security_group_rule" "public_lb_web_ingress" {
-    description                                         = "Restrict ${var.cluster_name} public load balancer to HTTPS traffic"
+    description                                         = "Restrict ${var.cluster_config.name} public load balancer to HTTPS traffic"
     type                                                = "ingress"
     from_port                                           = 443
     to_port                                             = 443
     protocol                                            = "TCP"
+    cidr_blocks                                         = [
+                                                        "0.0.0.0/0"
+                                                    ]
     security_group_id                                   = aws_security_group.public_lb_sg.id
 } 
 
 
 resource "aws_lb" "cluster_public_lb" {
-    name                                                = "${var.cluster_name}-cluster-public-lb"
+    name                                                = "${var.cluster_config.name}-cluster-public-lb"
     internal                                            = false
     load_balancer_type                                  = "application"
     security_groups                                     = [
                                                             aws_security_group.public_lb_sg.id
                                                         ]
-    subnets                                             = [
-                                                            for subnet in var.vpc_config.public_subnets : subnet.id
-                                                        ]
+    subnets                                             = var.vpc_config.public_subnet_ids
 
     enable_deletion_protection = true
     tags                                                = local.alb_tags
 
     access_logs {
         bucket                                          = aws_s3_bucket.lb_access_log_bucket.bucket
-        prefix                                          = "${var.cluster_name}-public-lb"
+        prefix                                          = "${var.cluster_config.name}-public-lb"
         enabled = true
     }
 }
 
 
 resource "aws_lb" "cluster_private_lb" {
-    name                                                = "${var.cluster_name}-cluster-private-lb"
+    name                                                = "${var.cluster_config.name}-cluster-private-lb"
     internal                                            = false
     load_balancer_type                                  = "application"
     security_groups                                     = [
                                                             aws_security_group.private_lb_sg.id
                                                         ]
-    subnets                                             = [
-                                                            for subnet in var.vpc_config.private_subnets : subnet.id
-                                                        ]
+    subnets                                             = var.vpc_config.private_subnet_ids
 
     enable_deletion_protection = true
     tags                                                = local.alb_tags
 
     access_logs {
         bucket                                          = aws_s3_bucket.lb_access_log_bucket.bucket
-        prefix                                          = "${var.cluster_name}-private-lb"
+        prefix                                          = "${var.cluster_config.name}-private-lb"
         enabled = true
     }
 }
