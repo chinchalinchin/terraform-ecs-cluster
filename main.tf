@@ -1,6 +1,7 @@
 module "cluster" {
   source                                  = "./modules/cluster"
-  some_var                                = ""
+  cluster_config                          = var.cluster_config
+  vpc_config                              = var.vpc_config        
 }
 
 
@@ -9,5 +10,10 @@ module "task" {
                                             module.cluster
                                           ]
   source                                  = "./modules/task"
+  cluster_config                          = var.cluster_config
+  vpc_config                              = var.vpc_config  
+  service_config                          = var.service_config
+  task_definition                         = var.task_definition
+  task_execution_role_arn                 = var.task_execution_role_arn
 }
 
