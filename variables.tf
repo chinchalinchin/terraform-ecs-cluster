@@ -53,6 +53,7 @@ variable "vpc_config" {
     sensitive                           = true
 }
 
+
 variable "task_definition" {
     description                         = "File path to Task Definition JSON"
     type                                = string
