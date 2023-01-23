@@ -4,10 +4,9 @@ metadata:
   name: aws-ecs-fargate-cluster
   title: AWS ECS Fargate Cluster
   description: Version control template for Terraform modules with CI files
-  ## NOTE: UNCOMMENT AND ADJUST WHEN DOCS WORKING
-  # links:
-  #   - url: TF DOC URL GOES HERE ONCE GH PAGES IS UP
-  #     title: Documentation
+  links:
+    - url: https://pages.github.boozallencsn.com/AutomationLibrary/aws-ecs-fargate-cluster/index.html
+      title: Documentation
   annotations:
   ## NOTE: see above
   #   backstage.io/techdocs-ref: dir:.
